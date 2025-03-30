@@ -12,7 +12,5 @@ int main() {
 	PackageInstaller::Core core;
 	core.InitializeApplication();
 
-	PackageInstaller::Windowing window;
-
-	std::cin.get();
+	return 0;
 }

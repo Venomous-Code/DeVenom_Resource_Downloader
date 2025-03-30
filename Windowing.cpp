@@ -5,10 +5,31 @@ PackageInstaller::Windowing::Windowing() {
 
     CreateApplicationWindow("SDL3_WINDOW");
 
-    bool isWindowClosed = false;
+
+    TextBoxMessage = "WELCOME TO 'DEVENOM RESOURCE DOWNLOADER'.";
+    const char* NextToBrowseButton = "NEXT";
+    short int ToggleCounter = 0;
+    const char* QuitToInstall = "QUIT";
 
     while (!isWindowClosed) {
         SDL_Event event;
+
+
+        if (isWindowClosed) {
+            SDL_DestroyWindow(mainWindow);
+            SDL_DestroyRenderer(mainRenderer);
+            SDL_DestroySurface(mainSurface);
+            SDL_DestroyTexture(mainTexture);
+
+            ImGui_ImplSDLRenderer3_Shutdown();
+            ImGui_ImplSDL3_Shutdown();
+            ImGui::DestroyContext();
+
+            SDL_Quit();
+            break;
+
+        }
+
 
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL3_ProcessEvent(&event);
@@ -23,15 +44,57 @@ PackageInstaller::Windowing::Windowing() {
 
         SDL_RenderClear(mainRenderer);
         SDL_RenderTexture(mainRenderer, mainTexture, NULL, NULL);
+        
         // Build your GUI
 
         ImGui::SetNextWindowPos(ImVec2(5, 430));
         ImGui::SetNextWindowSize(ImVec2(910, 45));
-        ImGui::Begin("Title", 0,
+        ImGui::Begin("###Title", 0,
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                         ImGuiWindowFlags_NoMove);
-        ImGui::Text("This is a simple Dear ImGui window.");
+                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+        ImGui::Text(TextBoxMessage);
+        ImGui::SetCursorPos(ImVec2(840, 10));
+
+
+        if (ToggleCounter >= 2) {
+            nGui.BrowseDirectory();
+            if (ToggleCounter == 4) ToggleCounter = 2;
+        }
+
+        if (ImGui::Button(NextToBrowseButton, ImVec2(65, 25))) {
+            TextBoxMessage =
+                "PLEASE CLICK ON 'BROWSE' TO CHOOSE INSTALLATION DIRECTORY.";
+            NextToBrowseButton = "BROWSE";
+            QuitToInstall = "INSTALL";
+            nGui.QuitCheck = false;
+            ToggleCounter++;
+        }
+
+        if (!nGui.closeSubWindow) {
+            ToggleCounter = 1;
+        }
+
+        ImGui::SetCursorPos(ImVec2(770, 10));
+        if (ImGui::Button(QuitToInstall, ImVec2(65, 25))) {
+            if (!nGui.QuitCheck) {
+                //Do The Installation Job.
+                std::cout << "I Should Do The Installation Job." << std::endl;
+            } else {
+                //Do The Quit Job.
+               /* std::cout << "I Should Do The Quit Job." << std::endl;*/
+                QuitJob = true;
+            }
+        }
+
         ImGui::End();
+
+        if (QuitJob) {
+            nGui.CloseInstaller();
+        }
+
+        if (nGui.Quitting) {
+            instantClose();
+        }
 
 
         ImGui::Render();
@@ -89,6 +152,9 @@ int PackageInstaller::Windowing::CreateApplicationWindow(
 
     ImGui_ImplSDL3_InitForSDLRenderer(mainWindow, mainRenderer);
     ImGui_ImplSDLRenderer3_Init(mainRenderer);
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.Fonts->AddFontFromFileTTF("Fonts/Gidole-Regular.ttf", 20);
 
     return 0;
 }
@@ -104,4 +170,9 @@ SDL_Rect PackageInstaller::Windowing::Div(int RectHeight, int RectWidth,
 
     return TextureRectangle;
 
+}
+
+void PackageInstaller::Windowing::instantClose() {
+
+    isWindowClosed = true;
 }

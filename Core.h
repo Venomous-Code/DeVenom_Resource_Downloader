@@ -19,5 +19,6 @@ namespace PackageInstaller {
 
 	private:
 		Logging Logs;
+      //Windowing window;
 	};
 }
